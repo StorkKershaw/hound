@@ -40,4 +40,9 @@ Source: "{#OutputDir}\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#AppName}"; ValueData: "{app}\{#AppName}.exe"; Flags: uninsdeletevalue
+Root: HKCU; \
+    Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
+    ValueType: string; \
+    ValueName: "{#AppName}"; \
+    ValueData: """{app}\{#AppName}.exe"""; \
+    Flags: uninsdeletevalue

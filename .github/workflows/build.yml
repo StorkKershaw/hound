@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2025
+    runs-on: windows-2022
 
     steps:
       - name: Checkout Code
@@ -18,17 +18,36 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Install Dependencies
+      - name: Install go-winres
+        run: go install github.com/tc-hib/go-winres@latest
+
+      - name: Build Application
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+          GOOS: windows
+          GOARCH: amd64
         run: |
-          go install github.com/go-task/task/v3/cmd/task@latest
-          go install github.com/tc-hib/go-winres@latest
-          winget install --accept-package-agreements --accept-source-agreements --disable-interactivity --id JRSoftware.InnoSetup --exact --source winget
-          Write-Output -InputObject "${env:LOCALAPPDATA}\Programs\Inno Setup 6" | Out-File -FilePath "$env:GITHUB_PATH" -Encoding utf8 -Append
+          go mod tidy
+          go-winres make --product-version=${{ env.APP_VERSION }} --file-version=${{ env.APP_VERSION }}
+          go build -ldflags='-H=windowsgui'
 
       - name: Build Installer
         env:
+          APP_NAME: hound
           APP_VERSION: ${{ github.ref_name }}
-        run: task build
+          APP_PUBLISHER: StorkKershaw
+          APP_URL: "${{ github.server_url }}/${{ github.repository }}"
+          OUTPUT_DIR: .\
+        uses: Minionguyjpro/Inno-Setup-Action@main
+        with:
+          path: installer.iss
+          options: |
+            /O+
+            /DAppName=${{ env.APP_NAME }}
+            /DAppVersion=${{ env.APP_VERSION }}
+            /DAppPublisher=${{ env.APP_PUBLISHER }}
+            /DAppURL=${{ env.APP_URL }}
+            /DOutputDir=${{ env.OUTPUT_DIR }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
