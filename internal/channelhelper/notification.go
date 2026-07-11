@@ -1,10 +1,10 @@
-package main
+package channelhelper
 
 import (
 	"github.com/electricbubble/go-toast"
 )
 
-func notify(in <-chan error, out chan<- struct{}) {
+func Notify(in <-chan error, out chan<- struct{}) {
 	toast.Push(
 		"🐕ᯓ hound is running",
 		toast.WithTitle("🐕 hound"),

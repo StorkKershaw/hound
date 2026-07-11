@@ -1,7 +1,8 @@
-package main
+package channelhelper
 
 import (
 	"log"
+	"runtime"
 	"unsafe"
 
 	"github.com/StorkKershaw/hound/internal/windows/networking/connectivity"
@@ -12,7 +13,9 @@ const (
 	RO_INIT_MULTITHREADED = 0x01
 )
 
-func monitorNetworkStatus(in <-chan struct{}, out chan<- struct{}) {
+func MonitorNetwork(in <-chan struct{}, out chan<- struct{}) {
+	runtime.LockOSThread()
+
 	if err := ole.RoInitialize(RO_INIT_MULTITHREADED); err != nil {
 		log.Printf("could not initialize Windows Runtime: %v", err)
 		return
@@ -30,6 +33,8 @@ func monitorNetworkStatus(in <-chan struct{}, out chan<- struct{}) {
 		log.Printf("Error adding network status changed handler: %v", err)
 		return
 	}
+
+	out <- struct{}{}
 
 	<-in
 

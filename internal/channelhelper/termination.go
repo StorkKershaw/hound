@@ -1,4 +1,4 @@
-package main
+package channelhelper
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func terminate(out chan<- struct{}) {
+func Terminate(out chan<- struct{}) {
 	termination := make(chan os.Signal, 1)
 	defer close(termination)
 	signal.Notify(termination, syscall.SIGINT, syscall.SIGTERM)

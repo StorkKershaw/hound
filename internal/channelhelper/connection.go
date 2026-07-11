@@ -1,4 +1,4 @@
-package main
+package channelhelper
 
 import (
 	"log"
@@ -6,7 +6,7 @@ import (
 	"github.com/StorkKershaw/hound/internal/windows/networking/connectivity"
 )
 
-func getNetworkConnection(in <-chan struct{}, out chan<- struct{}) {
+func WatchConnectivity(in <-chan struct{}, out chan<- struct{}) {
 	for range in {
 		func() { // closure to execute `defer` after each iteration
 			profile, err := connectivity.NetworkInformationGetInternetConnectionProfile()

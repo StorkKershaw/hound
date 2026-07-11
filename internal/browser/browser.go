@@ -1,45 +1,43 @@
 package browser
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/playwright-community/playwright-go"
+	pw "github.com/mxschmitt/playwright-go"
 )
 
-func Use(channel string, fn func(page playwright.Page)) {
-	options := playwright.RunOptions{
+func Use(channel string, fn func(page pw.Page)) error {
+	runOptions := &pw.RunOptions{
+		OnlyInstallShell:    true,
 		SkipInstallBrowsers: true,
+		Browsers:            []string{channel},
 	}
 
-	if err := playwright.Install(&options); err != nil {
-		log.Printf("could not install playwright dependencies: %v", err)
-		return
+	if err := pw.Install(runOptions); err != nil {
+		return fmt.Errorf("could not install playwright dependencies: %w", err)
 	}
 
-	pw, err := playwright.Run(&options)
+	playwright, err := pw.Run(runOptions)
 	if err != nil {
-		log.Printf("could not start playwright: %v", err)
-		return
+		return fmt.Errorf("could not start playwright: %w", err)
 	}
-	defer pw.Stop()
+	defer playwright.Stop()
 
-	context, err := pw.Chromium.Launch(
-		playwright.BrowserTypeLaunchOptions{
-			Channel: playwright.String(channel),
-		},
-	)
+	launchOptions := pw.BrowserTypeLaunchOptions{
+		Channel: new(channel),
+	}
+	context, err := playwright.Chromium.Launch(launchOptions)
 	if err != nil {
-		log.Printf("could not launch browser: %v", err)
-		return
+		return fmt.Errorf("could not launch browser: %w", err)
 	}
 	defer context.Close()
 
 	page, err := context.NewPage()
 	if err != nil {
-		log.Printf("could not create new page: %v", err)
-		return
+		return fmt.Errorf("could not create new page: %w", err)
 	}
 	defer page.Close()
 
 	fn(page)
+	return nil
 }
