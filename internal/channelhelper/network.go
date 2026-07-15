@@ -30,16 +30,17 @@ func MonitorNetwork(in <-chan struct{}, out chan<- struct{}) {
 
 	token, err := connectivity.NetworkInformationAddNetworkStatusChanged(handler)
 	if err != nil {
-		log.Printf("Error adding network status changed handler: %v", err)
+		log.Printf("could not add network status change handler: %v", err)
 		return
 	}
 
 	out <- struct{}{}
+	log.Printf("watching for network status changes")
 
 	<-in
 
 	if err := connectivity.NetworkInformationRemoveNetworkStatusChanged(token); err != nil {
-		log.Printf("Error removing network status changed handler: %v", err)
+		log.Printf("could not remove network status change handler: %v", err)
 		return
 	}
 }

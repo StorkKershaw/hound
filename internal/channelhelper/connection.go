@@ -11,20 +11,22 @@ func WatchConnectivity(in <-chan struct{}, out chan<- struct{}) {
 		func() { // closure to execute `defer` after each iteration
 			profile, err := connectivity.NetworkInformationGetInternetConnectionProfile()
 			if profile == nil || err != nil {
-				log.Printf("Error getting internet connection profile: %v", err)
+				log.Printf("could not get internet connection profile: %v", err)
 				return
 			}
 			defer profile.Release()
 
 			level, err := profile.GetNetworkConnectivityLevel()
 			if err != nil {
-				log.Printf("Error getting network connectivity level: %v", err)
+				log.Printf("could not get network connectivity level: %v", err)
 				return
 			}
 			if level != connectivity.NetworkConnectivityLevelConstrainedInternetAccess {
-				log.Printf("No authentication is required for network connectivity level: %v", level)
+				log.Printf("no authentication is required for network connectivity level: %v", level)
 				return
 			}
+
+			log.Printf("constrained network detected, requesting authentication")
 
 			out <- struct{}{}
 		}()

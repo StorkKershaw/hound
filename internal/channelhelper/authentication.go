@@ -12,14 +12,16 @@ import (
 
 const authRetryInterval = 30 * time.Second
 
-func Authenticate(in <-chan struct{}, out chan<- error) {
+func Authenticate(in <-chan struct{}, out chan<- struct{}) {
 	for {
 		err := browser.Use("chrome", func(page playwright.Page) {
 			for range in {
 				if err := authenticate(page); err != nil {
-					out <- err
+					log.Printf("authentication failed: %v", err)
 				}
 			}
+
+			out <- struct{}{}
 		})
 
 		if err == nil {
@@ -27,7 +29,6 @@ func Authenticate(in <-chan struct{}, out chan<- error) {
 		}
 
 		log.Printf("browser session failed, retrying in %s: %v", authRetryInterval, err)
-		out <- err
 		time.Sleep(authRetryInterval)
 	}
 }
@@ -68,5 +69,10 @@ func authenticate(page playwright.Page) error {
 		return err
 	}
 
-	return locator.Click()
+	if err := locator.Click(); err != nil {
+		return err
+	}
+
+	log.Printf("signed in to the captive portal at %s", parsed.Hostname())
+	return nil
 }
